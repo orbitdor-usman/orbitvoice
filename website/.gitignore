@@ -1,0 +1,6 @@
+node_modules
+.next
+data/download-stats.json
+.env
+public/downloads/*.exe
+public/orbitvoice-logo.png

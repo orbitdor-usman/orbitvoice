@@ -1,0 +1,94 @@
+{
+  "name": "orbitvoice",
+  "version": "1.1.0",
+  "description": "Orbitvoice: a lightweight Windows voice-to-text utility with a floating microphone widget.",
+  "main": "electron/main.js",
+  "author": "Orbitdor",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k -n backend,frontend,electron -c blue,green,magenta \"npm:dev:backend\" \"npm:dev:frontend\" \"npm:dev:electron\"",
+    "dev:frontend": "next dev frontend",
+    "dev:backend": "node scripts/dev-backend.js",
+    "dev:electron": "wait-on http://localhost:3000 http://localhost:3847 && cross-env NODE_ENV=development electron electron/main.js",
+    "build": "npm run build:frontend",
+    "build:frontend": "cross-env ORBITVOICE_BUILD=1 next build frontend",
+    "build:windows": "npm run prepare:speech && npm run prepare:icon && npm run build:frontend && electron-builder --win",
+    "prepare:speech": "node scripts/prepare-speech.js",
+    "predev": "npm run prepare:speech",
+    "test": "node --test tests/*.test.js",
+    "start": "node backend/server.js",
+    "lint": "next lint frontend",
+    "postinstall": "electron-builder install-app-deps",
+    "prepare:icon": "node scripts/create-icon.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "form-data": "^4.0.1",
+    "multer": "^2.3.0"
+  },
+  "devDependencies": {
+    "@huggingface/transformers": "^4.2.0",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8",
+    "next": "^15.1.6",
+    "postcss": "^8.5.1",
+    "rcedit": "^5.0.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "speech-to-text": "^3.0.2",
+    "tailwindcss": "^3.4.17",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.orbitdor.orbitvoice",
+    "productName": "Orbitvoice",
+    "icon": "electron/assets/orbitvoice.ico",
+    "asar": true,
+    "afterPack": "scripts/brand-windows.js",
+    "extraResources": [
+      {
+        "from": "electron/native",
+        "to": "native"
+      }
+    ],
+    "files": [
+      "electron/**/*",
+      "backend/**/*",
+      "frontend/out/**/*",
+      "THIRD_PARTY_NOTICES.md",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Orbitvoice-${version}-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "runAfterFinish": true
+    }
+  },
+  "allowScripts": {
+    "electron@34.5.8": true
+  }
+}

@@ -1,0 +1,36 @@
+# Orbitvoice
+
+> Orbitvoice is a private, multilingual Windows voice-typing application by Orbitdor. It turns spoken words into text at the active cursor.
+
+## Official links
+
+- [Orbitvoice home](https://www.orbitdor.com/)
+- [About Orbitvoice](https://www.orbitdor.com/about)
+- [Installation and usage docs](https://www.orbitdor.com/docs)
+- [Contact Orbitdor](https://www.orbitdor.com/contact)
+- [Privacy policy](https://www.orbitdor.com/privacy)
+- [Download Orbitvoice for Windows](https://www.orbitdor.com/downloads/Orbitvoice-1.1.0-Setup.exe)
+
+## Product summary
+
+Orbitvoice is a Windows 10/11 x64 desktop app with a floating microphone widget, keyboard shortcut dictation, local multilingual speech recognition, cursor insertion, and optional transcript cleanup with AI. It is designed for notes, messages, forms, documents, search fields, and other supported text inputs.
+
+## How it works
+
+1. Focus the field where text should appear.
+2. Click the floating microphone or press `Ctrl + Shift + Space`.
+3. Speak naturally.
+4. Click the microphone or press the shortcut again to stop and insert the transcript.
+
+The app includes a GUI overview for the latest transcript, manual copying, language selection, and settings. Dragging the widget changes its position without starting a recording.
+
+## Privacy summary
+
+Local recognition processes audio on the user's Windows computer. Optional AI enhancement is disabled by default and sends transcript text—not original audio—only when the user enables it with their own API key. See the [full privacy policy](https://www.orbitdor.com/privacy) for processing and download analytics details.
+
+## Company
+
+Orbitvoice is made by Orbitdor.
+
+- Email: orbitdor@gmail.com
+- Website: https://www.orbitdor.com

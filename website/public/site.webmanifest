@@ -1,0 +1,10 @@
+{
+  "name": "Orbitvoice",
+  "short_name": "Orbitvoice",
+  "description": "Private Windows voice typing by Orbitdor.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07100d",
+  "theme_color": "#07100d",
+  "icons": [{ "src": "/icon.png", "sizes": "any", "type": "image/png" }]
+}

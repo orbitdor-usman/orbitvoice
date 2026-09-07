@@ -1,0 +1,22 @@
+'use client';
+import Header from './components/Header';
+import DownloadButton from './components/DownloadButton';
+import { HeroVisual } from './components/AnimatedVisual';
+import MicIcon from './components/MicIcon';
+
+const features = [
+  ['01', 'Local by default', 'Your everyday voice typing stays available with the bundled speech model on your computer.'],
+  ['02', 'At the cursor', 'Speak into search boxes, notes, chats, forms and supported document fields without context switching.'],
+  ['03', 'Polish when ready', 'Optional AI cleanup improves punctuation and grammar while preserving your original words.']
+];
+
+export default function HomePage() {
+  return <><Header /><main>
+    <section className="hero page-shell"><div className="hero-copy"><div className="hero-kicker"><span className="eyebrow">Voice to text / Without friction</span><span className="kicker-line" /></div><h1>Your voice,<br /><em>everywhere.</em></h1><p className="hero-lede">Orbitvoice is a calm Windows companion that turns your words into text wherever your cursor is waiting.</p><div className="hero-actions"><DownloadButton windows label="Download for Windows" /><a className="text-link" href="/docs">Explore the workflow <span>↗</span></a></div><div className="microcopy"><span className="micro-dot" /> Windows 10/11 · 64-bit <span className="micro-separator" /> No API key required</div></div><HeroVisual /></section>
+    <section className="trust-strip"><div className="page-shell trust-inner"><span className="trust-label">Designed for your daily flow</span><span className="trust-items"><b><i>✦</i> Private by default</b><b><i>◌</i> Multilingual</b><b><i>↗</i> Lightweight</b></span></div></section>
+    <section className="section page-shell"><div className="section-heading"><div className="heading-row"><span className="eyebrow">Small tool. Big relief.</span></div><h2>Less typing.<br /><em>More flow.</em></h2><p>Thoughts move fast. Orbitvoice keeps the distance between your idea and the screen beautifully short.</p></div><div className="feature-grid">{features.map(([number, title, text]) => <article className="feature-card" key={title}><div className="card-topline"><span className="feature-number">{number}</span><span className="feature-arrow">↗</span></div><span className="feature-icon"><MicIcon /></span><h3>{title}</h3><p>{text}</p><a href="/docs">Learn more <span>→</span></a></article>)}</div></section>
+    <section className="workflow-section page-shell"><div className="workflow-intro"><span className="eyebrow">A simple rhythm</span><h2>Speak. Refine.<br /><em>Keep moving.</em></h2><p>Designed to disappear into the way you already work.</p></div><div className="workflow-steps"><div className="workflow-step"><span>01</span><div><h3>Focus</h3><p>Place your cursor in any supported field.</p></div></div><div className="workflow-step"><span>02</span><div><h3>Speak</h3><p>Use the mic or keyboard shortcut to dictate naturally.</p></div></div><div className="workflow-step"><span>03</span><div><h3>Flow</h3><p>Your words land at the cursor, ready to use.</p></div></div></div></section>
+    <section className="split-section page-shell"><div className="split-copy"><span className="eyebrow">Built around you</span><h2>Ready when<br /><em>you are.</em></h2><p>Keep the microphone close, place it where it feels natural, and keep working in the app already open. The widget remembers its position and stays above supported windows.</p><a className="text-link" href="/about">Meet Orbitvoice <span>↗</span></a></div><div className="quote-card"><span className="quote-mark">“</span><p>It feels like a tiny shortcut between a thought and the screen.</p><span className="quote-by">Orbitvoice design principle</span></div></section>
+    <section className="download-band" id="download"><div className="page-shell download-inner"><div><span className="eyebrow">Get started / 01</span><h2>Give your keyboard<br />a break.</h2><p>Install Orbitvoice once. It runs quietly in the background and is ready when you need it.</p></div><div className="download-right"><DownloadButton secondary windows label="Download for Windows" /><small>Orbitvoice 1.1.0 · Windows installer · ~129 MB</small></div></div></section>
+  </main><footer className="site-footer"><div className="page-shell footer-inner"><div><strong>Orbitvoice</strong><span>Voice, everywhere.</span></div><nav><a href="/about">About</a><a href="/docs">Docs</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a></nav><small>© 2026 Orbitdor</small></div></footer></>;
+}

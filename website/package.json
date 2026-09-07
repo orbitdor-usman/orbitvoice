@@ -1,0 +1,17 @@
+{
+  "name": "orbitvoice-website",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "prepare-assets": "node scripts/prepare-assets.js",
+    "dev": "npm run prepare-assets && next dev",
+    "build": "npm run prepare-assets && next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^15.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
