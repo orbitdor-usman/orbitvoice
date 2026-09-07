@@ -13,7 +13,7 @@ npm run dev
 
 `npm run prepare-assets` copies the current installer from `desktop-app/` (or the local repository's `../release` folder) into `public/downloads/`. The website's download button calls `POST /api/download`, records the UTC timestamp and aggregates by day, month and year, then sends the browser to the installer. The stats file is local by default; use `DOWNLOAD_STATS_FILE` on a self-hosted Node server for a persistent location. Serverless hosts need a database or durable storage adapter for analytics persistence.
 
-The Windows installer is about 129 MB. For Vercel, do not rely on a repository-local executable or the `release/` folder. Upload it to a durable public location such as a GitHub Release, object storage, or CDN and set `ORBITVOICE_INSTALLER_URL` in Vercel Environment Variables. If this variable is not set, the app falls back to `/downloads/Orbitvoice-1.1.0-Setup.exe` for local deployments.
+The Windows installer is about 129 MB. For Vercel, do not rely on a repository-local executable or the `release/` folder. Publish `Orbitvoice-1.1.0-Setup.exe` in the public GitHub Release tagged `v1.1.0`, or use another durable public location, then set `ORBITVOICE_INSTALLER_URL` in Vercel Environment Variables. The production fallback is `https://github.com/orbitdor-usman/orbitvoice/releases/download/v1.1.0/Orbitvoice-1.1.0-Setup.exe`.
 
 The direct `/downloads/Orbitvoice-1.1.0-Setup.exe` path and the legacy root `/Orbitvoice-1.1.0-Setup.exe` path both redirect to the configured external installer URL when deployed without a local executable.
 

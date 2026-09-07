@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 const installerName = 'Orbitvoice-1.1.0-Setup.exe';
+const publicInstallerUrl = 'https://github.com/orbitdor-usman/orbitvoice/releases/download/v1.1.0/Orbitvoice-1.1.0-Setup.exe';
 
 export async function GET(request, { params }) {
   const { filename } = await params;
@@ -8,8 +9,8 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: 'File not found.' }, { status: 404 });
   }
 
-  const configuredUrl = process.env.ORBITVOICE_INSTALLER_URL;
-  if (!configuredUrl || configuredUrl === `/downloads/${installerName}`) {
+  const configuredUrl = process.env.ORBITVOICE_INSTALLER_URL || publicInstallerUrl;
+  if (configuredUrl === `/downloads/${installerName}` || configuredUrl === installerName) {
     return NextResponse.json({ error: 'Installer URL is not configured for this deployment.' }, { status: 503 });
   }
 

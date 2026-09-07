@@ -4,7 +4,9 @@ import crypto from 'node:crypto';
 
 const defaultFile = path.join(process.cwd(), 'data', 'download-stats.json');
 const statsFile = process.env.DOWNLOAD_STATS_FILE || defaultFile;
-const installer = process.env.ORBITVOICE_INSTALLER_URL || '/downloads/Orbitvoice-1.1.0-Setup.exe';
+// GitHub Release is the production source for the large Windows installer.
+// Keep this public fallback in sync with the release tag and asset name.
+const installer = process.env.ORBITVOICE_INSTALLER_URL || 'https://github.com/orbitdor-usman/orbitvoice/releases/download/v1.1.0/Orbitvoice-1.1.0-Setup.exe';
 let writeQueue = Promise.resolve();
 
 function dayKey(date) { return date.toISOString().slice(0, 10); }
