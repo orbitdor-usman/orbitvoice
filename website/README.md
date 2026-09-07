@@ -15,6 +15,8 @@ npm run dev
 
 The Windows installer is about 129 MB. For Vercel, do not rely on a repository-local executable or the `release/` folder. Upload it to a durable public location such as a GitHub Release, object storage, or CDN and set `ORBITVOICE_INSTALLER_URL` in Vercel Environment Variables. If this variable is not set, the app falls back to `/downloads/Orbitvoice-1.1.0-Setup.exe` for local deployments.
 
+The direct `/downloads/Orbitvoice-1.1.0-Setup.exe` path also redirects to the configured external installer URL when deployed without a local executable.
+
 The header reads `GET /api/download-count`, which exposes only the public aggregate total and formats it compactly (`999`, `1k`, `1.1k`).
 
 Protect `GET /api/analytics` with the server-only `DOWNLOAD_ANALYTICS_API_KEY` environment variable. Send it as `x-api-key` or `Authorization: Bearer ...`. Do not use a `NEXT_PUBLIC_` prefix for this key. The API adds security headers, limits repeated download events, and never stores raw IP addresses.
