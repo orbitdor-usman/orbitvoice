@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 
 const defaultFile = path.join(process.cwd(), 'data', 'download-stats.json');
 const statsFile = process.env.DOWNLOAD_STATS_FILE || defaultFile;
-const installer = '/downloads/Orbitvoice-1.1.0-Setup.exe';
+const installer = process.env.ORBITVOICE_INSTALLER_URL || '/downloads/Orbitvoice-1.1.0-Setup.exe';
 let writeQueue = Promise.resolve();
 
 function dayKey(date) { return date.toISOString().slice(0, 10); }
