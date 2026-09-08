@@ -182,7 +182,7 @@ strong {
   gap: 26px;
   width: min(1320px, calc(100% - 64px));
   margin-inline: auto;
-  height: 80px;
+  height: 68px;
 }
 .brand {
   display: inline-flex;
@@ -1327,7 +1327,7 @@ kbd {
   }
   .header-inner {
     width: calc(100% - 48px);
-    height: 72px;
+    height: 66px;
   }
   .desktop-nav,
   .desktop-download {
@@ -1439,7 +1439,7 @@ kbd {
     width: calc(100% - 40px);
   }
   .header-inner {
-    height: 70px;
+    height: 64px;
     gap: 10px;
   }
   .brand-mark {
