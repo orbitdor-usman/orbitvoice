@@ -71,7 +71,6 @@ p { color: var(--muted); }
 .micro-separator { width: 3px; height: 3px; border-radius: 50%; background: #557666; }
 
 .hero-visual { position: relative; display: grid; place-items: center; min-height: 480px; }
-.hero-visual::before { position: absolute; width: 540px; height: 390px; border-radius: 47% 53% 42% 58%; content: ''; background: radial-gradient(ellipse, rgba(58, 190, 112, .27), rgba(7, 16, 13, 0) 69%); filter: blur(6px); }
 .hero-visual::after { position: absolute; right: 4%; bottom: 7%; width: 240px; height: 100px; border-top: 1px solid rgba(166, 239, 196, .16); border-radius: 50%; content: ''; transform: rotate(-17deg); }
 .voice-visual { position: relative; z-index: 2; width: min(620px, 108%); overflow: visible; }
 .svg-trace { fill: none; stroke: rgba(158, 228, 190, .22); stroke-dasharray: 4 12; }
