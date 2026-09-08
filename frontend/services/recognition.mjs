@@ -3,13 +3,14 @@ import SpeechToText from 'speech-to-text';
 let worker;
 let sequence = 0;
 const pending = new Map();
-export function localRequest(audio, language, onProgress) {
+export function localRequest(audio, language, onProgress, { model = 'base', onPartial } = {}) {
   if (!worker) {
     worker = new Worker(new URL('./speech.worker.js', import.meta.url));
     worker.onmessage = ({ data }) => {
       const job = pending.get(data.id);
       if (!job) return;
       if (data.progress) return job.onProgress?.(data.progress);
+      if (typeof data.partial === 'string') return job.onPartial?.(data.partial);
       clearTimeout(job.timer);
       pending.delete(data.id);
       if (data.error) job.reject(new Error(data.error));
@@ -20,8 +21,8 @@ export function localRequest(audio, language, onProgress) {
   return new Promise((resolve, reject) => {
     const id = ++sequence;
     const timer = setTimeout(() => disposeRecognition('Local recognition timed out. Try a shorter recording.'), 180000);
-    pending.set(id, { resolve, reject, onProgress, timer });
-    worker.postMessage({ id, audio, language });
+    pending.set(id, { resolve, reject, onProgress, onPartial, timer });
+    worker.postMessage({ id, audio, language, model }, audio ? [audio.buffer] : []);
   });
 }
 export function disposeRecognition(message = 'Recognition cancelled.') {

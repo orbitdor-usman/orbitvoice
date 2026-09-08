@@ -1,7 +1,9 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { AlertIcon, CheckIcon, MicIcon } from '../../components/icons';
-import { decodeAudio, disposeRecognition, localRequest, microphoneError, startBrowserRecognition } from '../../services/recognition';
+import { disposeRecognition, localRequest, microphoneError, startBrowserRecognition } from '../../services/recognition.mjs';
+import { captureAudio } from '../../services/audio-capture';
+import { cleanTranscript } from '../../services/speech-utils.mjs';
 
 export default function WidgetPage() {
   const [state, setState] = useState('idle');
@@ -12,6 +14,8 @@ export default function WidgetPage() {
   const action = useRef(null);
   const pointer = useRef(null);
   const reset = useRef(null);
+  const warmup = useRef(null);
+  const idleUnload = useRef(null);
   const bridge = () => window.voiceToText;
   const publish = (next, detail, engine) => {
     clearTimeout(reset.current);
@@ -21,6 +25,7 @@ export default function WidgetPage() {
   };
   const release = run => {
     clearTimeout(run?.limit);
+    run?.capture?.cancel();
     run?.stream?.getTracks().forEach(track => track.stop());
     run?.browser?.cancel();
   };
@@ -29,7 +34,6 @@ export default function WidgetPage() {
     session.current = null;
     if (run) {
       run.cancelled = true;
-      if (run.recorder?.state === 'recording') { run.recorder.onstop = null; run.recorder.stop(); }
       release(run);
       if (run.id) bridge()?.cancelDictation(run.id).catch(() => {});
     }
@@ -40,23 +44,28 @@ export default function WidgetPage() {
     if (next === 'success' || next === 'fallback') reset.current = setTimeout(() => publish(settings.current.enabled ? 'idle' : 'paused', settings.current.enabled ? 'Ready — click to dictate, drag to move' : 'Paused'), 6000);
   };
   const transcribe = async run => {
-    run.stream?.getTracks().forEach(track => track.stop());
     clearTimeout(run.limit);
     try {
-      let text = await run.browser?.stop();
+      // Stop browser and PCM capture together; stopping either one never waits
+      // for the inference worker, so the microphone is released immediately.
+      const [audio, browserText] = await Promise.all([run.capture.stop(), run.browser?.stop()]);
+      let text = browserText;
       if (run.cancelled) return;
       let engine = 'Browser speech';
       if (!text) {
-        engine = 'Local speech';
-        publish('processing', 'Recognizing speech on this device…', engine);
-        const blob = new Blob(run.chunks, { type: run.recorder.mimeType });
-        if (!blob.size) throw new Error('No audio was recorded. Try again.');
-        const audio = await decodeAudio(blob);
+        engine = `Whisper ${run.settings.speechModel || 'base'} · local`;
+        publish('transcribing', 'Transcribing on your device…', engine);
+        // Only one preview can be in flight. Final inference never queues behind
+        // multiple stale snapshots and is the sole source of inserted text.
+        await run.previewJob;
         if (run.cancelled) return;
-        text = await localRequest(audio, run.settings.language, detail => { if (!run.cancelled) publish('processing', detail, engine); });
+        text = await localRequest(audio, run.settings.language,
+          detail => { if (!run.cancelled) publish('transcribing', detail, engine); },
+          { model: run.settings.speechModel, onPartial: text => preview(run, text) });
       }
       if (run.cancelled) return;
       if (!text?.trim()) throw new Error('No speech was detected. Try speaking closer to the microphone.');
+      text = cleanTranscript(text, run.settings.language);
       let result = { text, enhanced: false, fallback: false };
       if (run.settings.aiEnhancement && run.settings.apiKeyConfigured) publish('ai-processing', 'Improving punctuation and grammar…', engine);
       try { result = await bridge().enhanceText(text, run.id); }
@@ -72,31 +81,61 @@ export default function WidgetPage() {
       release(run);
       if (run.id) bridge()?.cancelDictation(run.id).catch(() => {});
       if (session.current === run) session.current = null;
+      clearTimeout(idleUnload.current);
+      idleUnload.current = setTimeout(() => { if (!session.current) disposeRecognition(); }, 300000);
     }
   };
   const start = async () => {
     if (!settings.current.enabled || session.current) return;
-    const run = { settings: { ...settings.current }, chunks: [], cancelled: false };
+    clearTimeout(warmup.current);
+    clearTimeout(idleUnload.current);
+    const run = { settings: { ...settings.current }, cancelled: false, stopping: false, lastPreviewAt: 0, lastTelemetryAt: 0 };
     session.current = run;
     publish('processing', 'Preparing microphone…');
     try {
       if (!bridge()) throw new Error('Open the desktop app to dictate into another application.');
       run.id = await bridge().beginDictation();
       if (run.cancelled) { await bridge().cancelDictation(run.id); return; }
-      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') throw new Error('Microphone recording is unavailable on this computer.');
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error('Microphone recording is unavailable on this computer.');
       const id = run.settings.microphoneId;
-      run.stream = await navigator.mediaDevices.getUserMedia({ audio: id && id !== 'default' ? { deviceId: { exact: id } } : true });
+      run.capture = await captureAudio(async () => {
+        run.stream = await navigator.mediaDevices.getUserMedia({ audio: {
+          ...(id && id !== 'default' ? { deviceId: { exact: id } } : {}),
+          channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true,
+        } });
+        if (run.cancelled) { release(run); throw new Error('Recording cancelled.'); }
+        return run.stream;
+      }, {
+        autoStop: run.settings.autoStopSilence !== false,
+        onStop: reason => stop(reason),
+        onActivity: activity => {
+          if (run.cancelled || run.stopping) return;
+          const now = performance.now();
+          if (now - run.lastTelemetryAt >= 200) {
+            run.lastTelemetryAt = now;
+            bridge()?.recordingProgress?.(run.id, { elapsed: Math.floor(activity.elapsed / 1000), level: activity.level });
+          }
+          const next = activity.hasSpeech && activity.silenceMs < 350 ? 'recording' : 'listening';
+          if (status.current !== next) publish(next, activity.speaking ? 'Recording your voice…' : 'Listening — pauses of 3 seconds finish your dictation');
+          if (!run.browser && activity.hasSpeech && !run.previewBusy && activity.elapsed - run.lastPreviewAt >= 6000 && activity.elapsed < 28000) {
+            run.previewBusy = true; run.lastPreviewAt = activity.elapsed;
+            run.previewJob = (async () => {
+              const audio = await run.capture.snapshot(true);
+              if (run.cancelled || run.stopping) return;
+              const text = await localRequest(audio, run.settings.language, undefined, {
+                model: run.settings.speechModel,
+                onPartial: text => { if (!run.stopping) preview(run, text); },
+              });
+              if (!run.stopping) preview(run, text);
+            })().catch(() => {}).finally(() => { run.previewBusy = false; });
+          }
+        },
+      });
       if (run.cancelled) { release(run); return; }
-      const mimeType = ['audio/webm;codecs=opus', 'audio/webm'].find(type => MediaRecorder.isTypeSupported(type));
-      run.recorder = new MediaRecorder(run.stream, mimeType ? { mimeType } : undefined);
-      run.recorder.ondataavailable = event => { if (event.data.size) run.chunks.push(event.data); };
-      run.recorder.onstop = () => { if (!run.cancelled) transcribe(run); };
-      run.recorder.onerror = () => { cancel(); publish('error', 'Microphone recording failed. Try again.'); };
-      run.browser = startBrowserRecognition(run.settings.language, id, () => {});
-      run.recorder.start(250);
-      run.stream.getAudioTracks().forEach(track => { track.onended = () => { if (!run.cancelled && status.current === 'listening') stop(); }; });
+      if (run.settings.browserRecognition) run.browser = startBrowserRecognition(run.settings.language, id, text => preview(run, text));
+      run.stream.getAudioTracks().forEach(track => { track.onended = () => { if (!run.cancelled && !run.stopping) stop('device-ended'); }; });
       run.limit = setTimeout(stop, 60000);
-      publish('listening', 'Listening — click to stop (up to 60 seconds)', run.browser ? 'Browser speech' : 'Local speech');
+      publish('listening', 'Listening — speak naturally, then pause to finish', run.browser ? 'Browser speech' : `Whisper ${run.settings.speechModel || 'base'} · local`);
     } catch (error) {
       release(run);
       if (run.id) bridge()?.cancelDictation(run.id).catch(() => {});
@@ -104,21 +143,34 @@ export default function WidgetPage() {
       if (!run.cancelled) publish(['NotAllowedError', 'SecurityError'].includes(error.name) ? 'permission-required' : 'error', microphoneError(error));
     }
   };
-  const stop = () => {
-    const run = session.current;
-    if (run?.recorder?.state === 'recording') { publish('processing', 'Processing speech…'); run.recorder.stop(); }
+  const preview = (run, text) => {
+    if (!run.cancelled && session.current === run) bridge()?.recordingProgress?.(run.id, { interimTranscript: String(text).slice(0, 20000) });
   };
-  action.current = () => { if (status.current === 'listening') stop(); else if (!session.current) start(); };
+  const stop = (reason = 'manual') => {
+    const run = session.current;
+    if (run?.capture && !run.stopping && !run.cancelled) {
+      run.stopping = true;
+      publish('processing', reason === 'silence' ? 'Pause detected — finishing your transcript…' : 'Finishing your transcript…');
+      void transcribe(run);
+    }
+  };
+  action.current = () => { if (['listening', 'recording'].includes(status.current)) stop(); else if (!session.current) start(); };
   useEffect(() => {
     let active = true;
-    bridge()?.getSettings().then(value => { if (active) { settings.current = value; if (!value.enabled) publish('paused', 'Paused'); } }).catch(() => {});
+    bridge()?.getSettings().then(value => {
+      if (!active) return;
+      settings.current = value;
+      if (!value.enabled) publish('paused', 'Paused');
+      // Warm the selected model without acquiring microphone access.
+      if (value.enabled) warmup.current = setTimeout(() => { if (!session.current) localRequest(null, value.language, undefined, { model: value.speechModel }).catch(() => {}); }, 1000);
+    }).catch(() => {});
     const offState = bridge()?.onAppState(value => {
       settings.current = { ...settings.current, ...value };
       if (!value.enabled && status.current !== 'paused') { cancel(); publish('paused', 'Paused'); }
       else if (value.enabled && status.current === 'paused') publish('idle', 'Ready — click to dictate, drag to move');
     });
     const offToggle = bridge()?.onToggleRecording(() => action.current());
-    return () => { active = false; offState?.(); offToggle?.(); cancel(); clearTimeout(reset.current); };
+    return () => { active = false; offState?.(); offToggle?.(); cancel(); clearTimeout(reset.current); clearTimeout(warmup.current); clearTimeout(idleUnload.current); };
   }, []);
   const down = event => {
     if (event.button !== 0) return;
@@ -141,13 +193,13 @@ export default function WidgetPage() {
     bridge()?.dragWidget(point.moved ? 'end' : 'cancel');
     if (!point.moved && event.type !== 'pointercancel') action.current();
   };
-  const busy = state === 'processing' || state === 'ai-processing';
+  const busy = ['processing', 'ai-processing', 'transcribing'].includes(state);
   return <div className="widget-shell" title={message}>
-    <button className={`widget-button widget-${state}`} aria-label={message} aria-pressed={state === 'listening'}
+    <button className={`widget-button widget-${state}`} aria-label={message} aria-pressed={state === 'listening' || state === 'recording'}
       onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
       onClick={event => { if (event.detail === 0) action.current(); }}>
       {busy ? <span className="widget-spinner" /> : state === 'success' ? <CheckIcon size={23} /> : ['error', 'permission-required'].includes(state) ? <AlertIcon size={23} /> : <MicIcon size={23} />}
-      {state === 'listening' && <span className="widget-live-dot" />}
+      {['listening', 'recording'].includes(state) && <span className="widget-live-dot" />}
     </button>
   </div>;
 }

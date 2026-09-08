@@ -271,4 +271,4 @@ function shutdownInputHelper() {
 // Normal quit must await shutdownInputHelper(); emergency exit cannot restore.
 process.once('exit', () => { if (helper) helper.child.kill(); });
 
-module.exports = { captureTarget, pasteIntoFocusedField, shutdownInputHelper };
+module.exports = { captureTarget, pasteIntoFocusedField, shutdownInputHelper, warmInputHelper: () => getHelper().ready };

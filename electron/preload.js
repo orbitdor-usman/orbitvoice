@@ -4,6 +4,10 @@ const allowedStateEvents = ['app-state', 'toggle-recording'];
 
 contextBridge.exposeInMainWorld('voiceToText', {
   getSettings: () => ipcRenderer.invoke('settings:get'),
+  getAppInfo: () => ipcRenderer.invoke('app:info'),
+  openProductLink: (name) => ipcRenderer.invoke('app:open-link', name),
+  checkForUpdates: () => ipcRenderer.invoke('app:check-updates'),
+  recordingProgress: (id, progress) => ipcRenderer.send('widget:progress', { id, progress }),
   updateSettings: (patch) => ipcRenderer.invoke('settings:update', patch),
   getPermissionStatus: () => ipcRenderer.invoke('permission:status'),
   setEnabled: (enabled) => ipcRenderer.invoke('app:set-enabled', Boolean(enabled)),

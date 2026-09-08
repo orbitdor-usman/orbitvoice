@@ -2,14 +2,18 @@
 const fs = require('fs/promises');
 const path = require('path');
 const { createHash } = require('crypto');
-const model = 'Xenova/whisper-tiny';
+const models = ['Xenova/whisper-tiny', 'Xenova/whisper-base'];
 const root = path.join(__dirname, '..', 'frontend', 'public');
 const files = ['config.json', 'generation_config.json', 'preprocessor_config.json', 'tokenizer.json', 'tokenizer_config.json', 'onnx/encoder_model_quantized.onnx', 'onnx/decoder_model_merged_quantized.onnx'];
 
-async function main() {
-  const manifestFile = path.join(root, 'models', 'manifest.json');
+async function prepareModel(model) {
+  const manifestFile = path.join(root, 'models', `${model.split('/')[1]}-manifest.json`);
   let previous;
   try { previous = JSON.parse(await fs.readFile(manifestFile, 'utf8')); } catch {}
+  // Reuse the original pinned tiny manifest on the first upgrade.
+  if (!previous && model === 'Xenova/whisper-tiny') {
+    try { previous = JSON.parse(await fs.readFile(path.join(root, 'models', 'manifest.json'), 'utf8')); } catch {}
+  }
   const meta = previous || await fetch(`https://huggingface.co/api/models/${model}`).then(r => { if (!r.ok) throw new Error('Cannot resolve speech model revision'); return r.json(); });
   const revision = meta.revision || meta.sha;
   const records = [];
@@ -29,6 +33,10 @@ async function main() {
     records.push({ file, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
   }
   await fs.writeFile(manifestFile, JSON.stringify({ model, revision, files: records }, null, 2));
+}
+
+async function main() {
+  for (const model of models) await prepareModel(model);
   const licenses = path.join(root, 'models', 'licenses');
   await fs.mkdir(licenses, { recursive: true });
   for (const [pkg, name] of [['@huggingface/transformers', 'Apache-2.0.txt'], ['speech-to-text', 'speech-to-text-MIT.txt']]) {

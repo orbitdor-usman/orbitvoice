@@ -3,8 +3,8 @@ const path = require('path');
 
 function createMainWindow({ rendererUrl }) {
   const mainWindow = new BrowserWindow({
-    width: 1040,
-    height: 760,
+    width: 1180,
+    height: 820,
     minWidth: 640,
     minHeight: 620,
     show: false,

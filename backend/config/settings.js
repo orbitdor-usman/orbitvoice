@@ -5,6 +5,9 @@ const defaults = {
   enabled: true,
   microphoneId: 'default',
   language: 'auto',
+  speechModel: 'base',
+  autoStopSilence: true,
+  browserRecognition: false,
   aiEnhancement: false,
   widgetPosition: null,
   servicePort: 3847,
@@ -35,6 +38,7 @@ function writeSettings(patch) {
   const allowed = {};
   for (const [key, value] of Object.entries(patch || {})) {
     if (!Object.hasOwn(defaults, key)) continue;
+    if (key === 'speechModel' && !['tiny', 'base'].includes(value)) continue;
     if (typeof defaults[key] === 'boolean' && typeof value !== 'boolean') continue;
     if (typeof defaults[key] === 'string' && (typeof value !== 'string' || value.length > 256)) continue;
     if (key === 'servicePort' && (!Number.isInteger(value) || value < 1024 || value > 65535)) continue;

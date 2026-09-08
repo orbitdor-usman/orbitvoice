@@ -31,7 +31,7 @@ test('successful enhancement and malformed/incomplete output', async () => {
 });
 
 test('speech-to-text integration selects local for auto language/custom mic and survives browser service failure', async () => {
-  const { startBrowserRecognition } = await import('../frontend/services/recognition.js');
+  const { startBrowserRecognition } = await import('../frontend/services/recognition.mjs');
   let recognition;
   global.window = { webkitSpeechRecognition: class {
     constructor() { recognition = this; }
@@ -60,7 +60,7 @@ test('speech-to-text integration selects local for auto language/custom mic and 
 });
 
 test('microphone failures have actionable messages', async () => {
-  const { microphoneError } = await import('../frontend/services/recognition.js');
+  const { microphoneError } = await import('../frontend/services/recognition.mjs');
   assert.match(microphoneError({ name: 'NotAllowedError' }), /permission required/i);
   assert.match(microphoneError({ name: 'NotFoundError' }), /No matching microphone/);
   assert.match(microphoneError({ name: 'OverconstrainedError' }), /System default/);
