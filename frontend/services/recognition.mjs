@@ -3,7 +3,8 @@ import SpeechToText from 'speech-to-text';
 let worker;
 let sequence = 0;
 const pending = new Map();
-export function localRequest(audio, language, onProgress, { model = 'base', onPartial } = {}) {
+export function localRequest(audio, language, onProgress, { model = 'base', onPartial, signal } = {}) {
+  if (signal?.aborted) return Promise.reject(new DOMException('Recognition cancelled.', 'AbortError'));
   if (!worker) {
     worker = new Worker(new URL('./speech.worker.js', import.meta.url));
     worker.onmessage = ({ data }) => {
@@ -12,6 +13,7 @@ export function localRequest(audio, language, onProgress, { model = 'base', onPa
       if (data.progress) return job.onProgress?.(data.progress);
       if (typeof data.partial === 'string') return job.onPartial?.(data.partial);
       clearTimeout(job.timer);
+      job.cleanup();
       pending.delete(data.id);
       if (data.error) job.reject(new Error(data.error));
       else job.resolve(data.text || '');
@@ -21,13 +23,21 @@ export function localRequest(audio, language, onProgress, { model = 'base', onPa
   return new Promise((resolve, reject) => {
     const id = ++sequence;
     const timer = setTimeout(() => disposeRecognition('Local recognition timed out. Try a shorter recording.'), 180000);
-    pending.set(id, { resolve, reject, onProgress, onPartial, timer });
+    const abort = () => {
+      if (!pending.delete(id)) return;
+      clearTimeout(timer);
+      signal.removeEventListener('abort', abort);
+      worker?.postMessage({ cancel: id });
+      reject(new DOMException('Recognition cancelled.', 'AbortError'));
+    };
+    pending.set(id, { resolve, reject, onProgress, onPartial, timer, cleanup: () => signal?.removeEventListener('abort', abort) });
+    signal?.addEventListener('abort', abort, { once: true });
     worker.postMessage({ id, audio, language, model }, audio ? [audio.buffer] : []);
   });
 }
 export function disposeRecognition(message = 'Recognition cancelled.') {
   worker?.terminate(); worker = null;
-  for (const job of pending.values()) { clearTimeout(job.timer); job.reject(new Error(message)); }
+  for (const job of pending.values()) { clearTimeout(job.timer); job.cleanup(); job.reject(new Error(message)); }
   pending.clear();
 }
 

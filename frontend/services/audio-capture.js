@@ -18,7 +18,7 @@ export async function captureAudio(acquireStream, { onActivity, onStop, autoStop
     // Trim silence only after the last speech, keeping a 400ms word-end margin.
     const end = trim && detector.speechMs >= 160
       ? Math.min(length, Math.ceil((detector.lastSpeech + 400) * context.sampleRate / 1000)) : length;
-    let audio = concatenateAudio(chunks, length).slice(0, end);
+    let audio = concatenateAudio(chunks, end);
     if (context.sampleRate !== 16000 && audio.length) {
       const offline = new OfflineAudioContext(1, Math.ceil(audio.length * 16000 / context.sampleRate), 16000);
       const buffer = offline.createBuffer(1, audio.length, context.sampleRate);

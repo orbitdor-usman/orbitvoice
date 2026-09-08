@@ -43,6 +43,10 @@ export function cleanTranscript(text, language = 'auto') {
 export function concatenateAudio(chunks, length) {
   const output = new Float32Array(length);
   let offset = 0;
-  for (const chunk of chunks) { output.set(chunk, offset); offset += chunk.length; }
+  for (const chunk of chunks) {
+    const count = Math.min(chunk.length, length - offset);
+    if (count <= 0) break;
+    output.set(chunk.subarray(0, count), offset); offset += count;
+  }
   return output;
 }

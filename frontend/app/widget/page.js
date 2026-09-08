@@ -4,6 +4,7 @@ import { AlertIcon, CheckIcon, MicIcon } from '../../components/icons';
 import { disposeRecognition, localRequest, microphoneError, startBrowserRecognition } from '../../services/recognition.mjs';
 import { captureAudio } from '../../services/audio-capture';
 import { cleanTranscript } from '../../services/speech-utils.mjs';
+import { TranscriptionSession } from '../../services/transcription-session.mjs';
 
 export default function WidgetPage() {
   const [state, setState] = useState('idle');
@@ -28,6 +29,7 @@ export default function WidgetPage() {
     run?.capture?.cancel();
     run?.stream?.getTracks().forEach(track => track.stop());
     run?.browser?.cancel();
+    run?.transcription?.cancel();
   };
   const cancel = () => {
     const run = session.current;
@@ -55,13 +57,9 @@ export default function WidgetPage() {
       if (!text) {
         engine = `Whisper ${run.settings.speechModel || 'base'} · local`;
         publish('transcribing', 'Transcribing on your device…', engine);
-        // Only one preview can be in flight. Final inference never queues behind
-        // multiple stale snapshots and is the sole source of inserted text.
-        await run.previewJob;
-        if (run.cancelled) return;
-        text = await localRequest(audio, run.settings.language,
-          detail => { if (!run.cancelled) publish('transcribing', detail, engine); },
-          { model: run.settings.speechModel, onPartial: text => preview(run, text) });
+        // Reuse only a full inference over identical PCM, never interim tokens.
+        // Otherwise interrupt stale preview decoding without unloading the model.
+        text = await run.transcription.finish(audio);
       }
       if (run.cancelled) return;
       if (!text?.trim()) throw new Error('No speech was detected. Try speaking closer to the microphone.');
@@ -90,12 +88,18 @@ export default function WidgetPage() {
     clearTimeout(warmup.current);
     clearTimeout(idleUnload.current);
     const run = { settings: { ...settings.current }, cancelled: false, stopping: false, lastPreviewAt: 0, lastTelemetryAt: 0 };
+    run.transcription = new TranscriptionSession((audio, signal) => localRequest(audio, run.settings.language,
+      detail => { if (run.stopping && !run.cancelled) publish('transcribing', detail, `Whisper ${run.settings.speechModel || 'base'} · local`); },
+      { model: run.settings.speechModel, signal, onPartial: text => preview(run, text) }));
     session.current = run;
     publish('processing', 'Preparing microphone…');
     try {
       if (!bridge()) throw new Error('Open the desktop app to dictate into another application.');
       run.id = await bridge().beginDictation();
       if (run.cancelled) { await bridge().cancelDictation(run.id); return; }
+      // Warm in parallel with device acquisition and speech, even when the user
+      // starts before the idle warm-up timer fires. Never delay microphone start.
+      void localRequest(null, run.settings.language, undefined, { model: run.settings.speechModel }).catch(() => {});
       if (!navigator.mediaDevices?.getUserMedia) throw new Error('Microphone recording is unavailable on this computer.');
       const id = run.settings.microphoneId;
       run.capture = await captureAudio(async () => {
@@ -117,17 +121,21 @@ export default function WidgetPage() {
           }
           const next = activity.hasSpeech && activity.silenceMs < 350 ? 'recording' : 'listening';
           if (status.current !== next) publish(next, activity.speaking ? 'Recording your voice…' : 'Listening — pauses of 3 seconds finish your dictation');
-          if (!run.browser && activity.hasSpeech && !run.previewBusy && activity.elapsed - run.lastPreviewAt >= 6000 && activity.elapsed < 28000) {
-            run.previewBusy = true; run.lastPreviewAt = activity.elapsed;
-            run.previewJob = (async () => {
+          const speechEnd = activity.elapsed - activity.silenceMs;
+          // Speculate during the silence grace period while the microphone stays
+          // open. Resumed speech invalidates this candidate; it is never inserted.
+          const endpoint = activity.silenceMs >= 600 && run.lastPreviewEnd !== speechEnd;
+          const periodic = !run.transcription.busy && activity.speaking && activity.elapsed - run.lastPreviewAt >= 6000;
+          if (!run.browser && activity.hasSpeech && !run.snapshotBusy && (endpoint || periodic) && activity.elapsed < 28000) {
+            run.snapshotBusy = true; run.lastPreviewAt = activity.elapsed;
+            if (endpoint) run.lastPreviewEnd = speechEnd;
+            void (async () => {
               const audio = await run.capture.snapshot(true);
+              run.snapshotBusy = false;
               if (run.cancelled || run.stopping) return;
-              const text = await localRequest(audio, run.settings.language, undefined, {
-                model: run.settings.speechModel,
-                onPartial: text => { if (!run.stopping) preview(run, text); },
-              });
-              if (!run.stopping) preview(run, text);
-            })().catch(() => {}).finally(() => { run.previewBusy = false; });
+              const text = await run.transcription.preview(audio);
+              if (text && !run.stopping) preview(run, text);
+            })().catch(() => { run.snapshotBusy = false; });
           }
         },
       });

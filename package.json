@@ -1,6 +1,6 @@
 {
   "name": "orbitvoice",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Orbitvoice: a lightweight Windows voice-to-text utility with a floating microphone widget.",
   "main": "electron/main.js",
   "author": "Orbitdor",
@@ -51,6 +51,7 @@
     "productName": "Orbitvoice",
     "icon": "electron/assets/orbitvoice.ico",
     "asar": true,
+    "compression": "maximum",
     "afterPack": "scripts/brand-windows.js",
     "extraResources": [
       {
@@ -63,7 +64,11 @@
       "backend/**/*",
       "frontend/out/**/*",
       "THIRD_PARTY_NOTICES.md",
-      "package.json"
+      "package.json",
+      "!electron/native/**/*",
+      "!**/*.map",
+      "!**/*.{pdb,ilk,log,tmp}",
+      "!**/{test,tests,__tests__,coverage,.cache}/**/*"
     ],
     "directories": {
       "output": "release/${version}"
@@ -81,6 +86,7 @@
       "artifactName": "Orbitvoice-${version}-Setup.${ext}"
     },
     "nsis": {
+      "differentialPackage": false,
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,

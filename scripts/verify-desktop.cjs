@@ -16,6 +16,14 @@ let application;
     env: { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== 'ELECTRON_RUN_AS_NODE')), ORBITVOICE_DATA_DIR: profile }, timeout: 45000 });
   application.process().stderr.on('data', data => console.log('electron:', data.toString().trim()));
   const externalRequests = [];
+  const wasmRequests = new Set();
+  const failedLocalRequests = [];
+  application.context().on('request', request => {
+    if (/\.(wasm|mjs)(\?|$)/.test(request.url())) wasmRequests.add(new URL(request.url()).pathname);
+  });
+  application.context().on('response', response => {
+    if (response.status() >= 400 && ['localhost', '127.0.0.1'].includes(new URL(response.url()).hostname)) failedLocalRequests.push(`${response.status()} ${response.url()}`);
+  });
   await application.context().route(url => !['localhost', '127.0.0.1'].includes(url.hostname), route => {
     externalRequests.push(route.request().url());
     return route.abort();
@@ -38,6 +46,28 @@ let application;
   }
   if (!widget) throw new Error('Widget did not open');
   await widget.waitForSelector('button');
+  await widget.evaluate(() => {
+    window.__qaSpeechJobs = [];
+    const send = Worker.prototype.postMessage;
+    const observed = new WeakSet();
+    let previous;
+    Worker.prototype.postMessage = function(data, ...args) {
+      if (!observed.has(this)) {
+        observed.add(this);
+        this.addEventListener('message', ({ data }) => {
+          if (data.ready || typeof data.text === 'string' || data.error) window.__qaSpeechJobs.push({ done: data.id, error: data.error, at: performance.now() });
+        });
+      }
+      let firstDifference = -1;
+      if (data.audio && previous) {
+        const count = Math.min(previous.length, data.audio.length);
+        for (let i = 0; i < count; i++) if (previous[i] !== data.audio[i]) { firstDifference = i; break; }
+      }
+      if (data.audio) previous = data.audio.slice();
+      window.__qaSpeechJobs.push({ id: data.id, cancel: data.cancel, samples: data.audio?.length, firstDifference, at: performance.now() });
+      return send.call(this, data, ...args);
+    };
+  });
   if (simulateInput) {
     // Exercise the real packaged capture, worker, models and React UI while
     // replacing only OS target/clipboard I/O on hosts without foreground access.
@@ -125,6 +155,12 @@ let application;
   assert.equal((value.toLowerCase().match(/quick brown fox/g) || []).length, 1, 'Preview must not duplicate final insertion');
   const timeline = await main.evaluate(() => ({ states: window.__qaStates, preview: window.__qaPreview }));
   console.log('Recording timeline:', JSON.stringify(timeline));
+  const finishStart = timeline.states.find(item => item.state === 'transcribing');
+  const completed = timeline.states.find(item => ['success', 'fallback'].includes(item.state));
+  console.log('Stop-to-final milliseconds:', Math.round(completed.at - finishStart.at));
+  console.log('Speech job timing:', JSON.stringify(await widget.evaluate(() => window.__qaSpeechJobs)));
+  console.log('Loaded audio runtime:', [...wasmRequests]);
+  assert.equal(failedLocalRequests.length, 0, failedLocalRequests.join('\n'));
   assert.ok(timeline.states.some(item => item.state === 'recording'));
   assert.ok(timeline.states.some(item => item.state === 'transcribing'));
   assert.equal(timeline.preview, true, 'Progressive transcript preview is visible');

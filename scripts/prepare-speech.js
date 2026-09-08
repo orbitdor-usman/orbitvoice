@@ -51,8 +51,13 @@ async function main() {
   const wasmDir = path.join(root, 'wasm');
   await fs.mkdir(wasmDir, { recursive: true });
   const ortDir = path.join(__dirname, '..', 'node_modules', 'onnxruntime-web', 'dist');
-  for (const file of await fs.readdir(ortDir)) {
-    if (/^ort-wasm.*\.(wasm|mjs)$/.test(file)) await fs.copyFile(path.join(ortDir, file), path.join(wasmDir, file));
+  // Match speech.worker.js and the WASM-only webpack alias. These two files
+  // include every CPU kernel used by both bundled multilingual speech models.
+  const runtimeFiles = ['ort-wasm-simd-threaded.mjs', 'ort-wasm-simd-threaded.wasm'];
+  for (const file of runtimeFiles) await fs.copyFile(path.join(ortDir, file), path.join(wasmDir, file));
+  // Remove only obsolete generated ORT copies, not user assets or model files.
+  for (const file of await fs.readdir(wasmDir)) {
+    if (/^ort-wasm.*\.(wasm|mjs)$/.test(file) && !runtimeFiles.includes(file)) await fs.unlink(path.join(wasmDir, file));
   }
   console.log('Offline speech model and WASM runtime ready.');
 }
