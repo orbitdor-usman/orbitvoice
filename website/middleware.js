@@ -23,6 +23,9 @@ function authorized(request) {
 export function middleware(request) {
   const response = NextResponse.next();
   response.headers.set('X-DNS-Prefetch-Control', 'off');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('Permissions-Policy', 'camera=(), geolocation=()');
   if (request.nextUrl.pathname.startsWith('/api/analytics') && !authorized(request)) {
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
   }

@@ -1,9 +1,23 @@
 import { NextResponse } from 'next/server';
-import { getDownloadStats } from '../../../lib/downloads';
+import { checkDownloadRateLimit, getDownloadCount } from '../../../lib/downloads';
 
-export async function GET() {
-  const stats = await getDownloadStats();
-  return NextResponse.json({ total: stats.total || 0 }, {
-    headers: { 'Cache-Control': 'no-store' }
-  });
+export async function GET(request) {
+  const rateLimit = await checkDownloadRateLimit(request, { limit: 60, scope: 'count' });
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many count requests. Try again shortly.' },
+      {
+        status: 429,
+        headers: {
+          'Cache-Control': 'no-store',
+          'Retry-After': String(rateLimit.retryAfter),
+        },
+      },
+    );
+  }
+
+  return NextResponse.json(
+    { total: await getDownloadCount() },
+    { headers: { 'Cache-Control': 'no-store' } },
+  );
 }

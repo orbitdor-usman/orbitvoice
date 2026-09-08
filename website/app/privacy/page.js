@@ -68,17 +68,16 @@ export default function PrivacyPage() {
         <h2>What this website measures</h2>
         <p>
           When a visitor clicks the Windows download button, this website
-          records one download event with its UTC timestamp and aggregated day,
-          month, and year totals. A short one-way client identifier may be used
-          to reduce automated abuse; the raw IP address is not written to the
-          statistics file. The public header displays only the aggregate
-          download total.
+          records one separate download event document with its UTC timestamp
+          and day, month, and year fields. A one-way HMAC hash of the request IP
+          is used to reduce automated abuse; the raw IP address is never
+          stored. The public header displays only the aggregate download total.
         </p>
         <h2>Data retention</h2>
         <p>
-          Download totals are kept in the website’s configured analytics store
-          so the public counter and internal reporting remain consistent. The
-          site does not use the download event to identify the person who
+          Download events are kept in the website&apos;s private MongoDB analytics
+          store so the public counter and internal reporting remain consistent.
+          The site does not use the download event to identify the person who
           downloaded the installer.
         </p>
         <h2>Contact Orbitdor</h2>

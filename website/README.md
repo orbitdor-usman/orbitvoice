@@ -11,15 +11,15 @@ npm install
 npm run dev
 ```
 
-`npm run prepare-assets` copies the current installer from `desktop-app/` (or the local repository's `../release` folder) into `public/downloads/`. The website's download button calls `POST /api/download`, records the UTC timestamp and aggregates by day, month and year, then sends the browser to the installer. The stats file is local by default; use `DOWNLOAD_STATS_FILE` on a self-hosted Node server for a persistent location. Serverless hosts need a database or durable storage adapter for analytics persistence.
+`npm run prepare-assets` copies the current installer from `desktop-app/` (or the local repository's `../release` folder) into `public/downloads/`. The website's download button calls `POST /api/download`, stores one MongoDB `download_events` document per accepted click, and then sends the browser to the installer. Each document includes the UTC day, month, year, a one-way HMAC IP hash, and limited request context; raw IP addresses are never stored. If `MONGODB_URI` is not configured for local development, the existing JSON file fallback is used.
 
 The Windows installer is about 129 MB. For Vercel, do not rely on a repository-local executable or the `release/` folder. Publish `Orbitvoice-1.1.0-Setup.exe` in the public GitHub Release tagged `v1.1.0`, or use another durable public location, then set `ORBITVOICE_INSTALLER_URL` in Vercel Environment Variables. The production fallback is `https://github.com/orbitdor-usman/orbitvoice/releases/download/v1.1.0/Orbitvoice-1.1.0-Setup.exe`.
 
 The direct `/downloads/Orbitvoice-1.1.0-Setup.exe` path and the legacy root `/Orbitvoice-1.1.0-Setup.exe` path both redirect to the configured external installer URL when deployed without a local executable.
 
-The header reads `GET /api/download-count`, which exposes only the public aggregate total and formats it compactly (`999`, `1k`, `1.1k`).
+The header reads `GET /api/download-count`, which counts the MongoDB event documents and exposes only the public aggregate total, formatted compactly (`999`, `1k`, `1.1k`). Both public endpoints use a MongoDB-backed fixed-window rate limiter when MongoDB is configured.
 
-Protect `GET /api/analytics` with the server-only `DOWNLOAD_ANALYTICS_API_KEY` environment variable. Send it as `x-api-key` or `Authorization: Bearer ...`. Do not use a `NEXT_PUBLIC_` prefix for this key. The API adds security headers, limits repeated download events, and never stores raw IP addresses.
+Protect `GET /api/analytics` with the server-only `DOWNLOAD_ANALYTICS_API_KEY` environment variable. Send it as `x-api-key` or `Authorization: Bearer ...`. Do not use a `NEXT_PUBLIC_` prefix for this key. Configure `MONGODB_URI`, `MONGODB_DB_NAME`, and a separate random `DOWNLOAD_IP_HASH_SECRET` in Vercel. The API adds security headers, limits repeated download events, and never stores raw IP addresses.
 
 Deploy with `npm run build` and `npm start`. A public HTTPS deployment is recommended. The downloadable app is for Windows x64.
 
