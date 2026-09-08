@@ -4,12 +4,12 @@
 
 ## Official links
 
-- [Orbitvoice home](https://www.orbitdor.com/)
-- [About Orbitvoice](https://www.orbitdor.com/about)
-- [Installation and usage docs](https://www.orbitdor.com/docs)
-- [Contact Orbitdor](https://www.orbitdor.com/contact)
-- [Privacy policy](https://www.orbitdor.com/privacy)
-- [Download Orbitvoice for Windows](https://www.orbitdor.com/downloads/Orbitvoice-1.1.0-Setup.exe)
+- [Orbitvoice home](https://ov.orbitdor.com/)
+- [About Orbitvoice](https://ov.orbitdor.com/about)
+- [Installation and usage docs](https://ov.orbitdor.com/docs)
+- [Contact Orbitdor](https://ov.orbitdor.com/contact)
+- [Privacy policy](https://ov.orbitdor.com/privacy)
+- [Download Orbitvoice for Windows](https://ov.orbitdor.com/downloads/Orbitvoice-1.1.0-Setup.exe)
 
 ## Product summary
 
@@ -26,7 +26,7 @@ The app includes a GUI overview for the latest transcript, manual copying, langu
 
 ## Privacy summary
 
-Local recognition processes audio on the user's Windows computer. Optional AI enhancement is disabled by default and sends transcript text—not original audio—only when the user enables it with their own API key. See the [full privacy policy](https://www.orbitdor.com/privacy) for processing and download analytics details.
+Local recognition processes audio on the user's Windows computer. Optional AI enhancement is disabled by default and sends transcript text—not original audio—only when the user enables it with their own API key. See the [full privacy policy](https://ov.orbitdor.com/privacy) for processing and download analytics details.
 
 ## Company
 

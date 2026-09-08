@@ -1,16 +1,16 @@
 import './globals.css';
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.orbitdor.com';
+import { siteUrl, companyUrl, googleVerification, socialImage } from '../lib/site';
 
 export const metadata = {
-  title: { default: 'Orbitvoice — Voice typing, everywhere.', template: '%s — Orbitvoice' },
-  description: 'Orbitvoice is a private, multilingual Windows voice typing app that turns speech into text at your cursor.',
+  title: { default: 'Orbitvoice — Voice Typing & Speech to Text for Windows', template: '%s — Orbitvoice' },
+  description: 'Turn speech into text at your cursor with Orbitvoice for Windows 10 and 11. Multilingual dictation, local recognition, a floating microphone and optional AI cleanup.',
   keywords: [
     'Orbitvoice', 'Orbitdor', 'Windows voice typing', 'speech to text Windows',
     'offline voice typing', 'voice to text app', 'multilingual dictation',
     'Windows dictation software', 'local speech recognition', 'AI writing assistant'
   ],
-  authors: [{ name: 'Orbitdor', url: siteUrl }],
+  authors: [{ name: 'Orbitdor', url: companyUrl }],
+  verification: { google: googleVerification },
   creator: 'Orbitdor',
   publisher: 'Orbitdor',
   applicationName: 'Orbitvoice',
@@ -29,13 +29,13 @@ export const metadata = {
     siteName: 'Orbitvoice',
     title: 'Orbitvoice — Voice typing, everywhere.',
     description: 'A private, multilingual Windows voice typing app that turns speech into text at your cursor.',
-    images: [{ url: '/og-image.svg', width: 1200, height: 630, alt: 'Orbitvoice Windows voice typing app' }]
+    images: [socialImage]
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Orbitvoice — Voice typing, everywhere.',
     description: 'Turn your voice into text anywhere on Windows.',
-    images: ['/og-image.svg']
+    images: [socialImage]
   },
   robots: {
     index: true,
@@ -44,7 +44,7 @@ export const metadata = {
   }
 };
 
-export const viewport = { width: 'device-width', initialScale: 1, themeColor: '#07100d', colorScheme: 'dark' };
+export const viewport = { width: 'device-width', initialScale: 1, themeColor: '#0a1210', colorScheme: 'dark' };
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -59,16 +59,26 @@ const structuredData = {
       url: siteUrl,
       downloadUrl: `${siteUrl}/downloads/Orbitvoice-1.1.0-Setup.exe`,
       softwareVersion: '1.1.0',
+      image: `${siteUrl}/opengraph-image`,
+      inLanguage: 'en',
+      featureList: [
+        'Voice typing at the active cursor in supported Windows applications',
+        'Floating microphone and Ctrl + Shift + Space shortcut',
+        'Bundled multilingual local speech recognition',
+        'Optional AI transcript cleanup using your own API key',
+        'Manual copying of the latest transcript'
+      ],
+      softwareRequirements: 'Windows 10 or Windows 11, 64-bit; microphone for voice input',
       author: { '@id': `${siteUrl}/#orbitdor` }
     },
     {
       '@type': 'Organization',
       '@id': `${siteUrl}/#orbitdor`,
       name: 'Orbitdor',
-      url: siteUrl,
+      url: companyUrl,
       email: 'orbitdor@gmail.com'
     },
-    { '@type': 'WebSite', '@id': `${siteUrl}/#website`, name: 'Orbitvoice', url: siteUrl, publisher: { '@id': `${siteUrl}/#orbitdor` } }
+    { '@type': 'WebSite', '@id': `${siteUrl}/#website`, name: 'Orbitvoice', url: siteUrl, inLanguage: 'en', publisher: { '@id': `${siteUrl}/#orbitdor` } }
   ]
 };
 

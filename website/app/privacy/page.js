@@ -1,3 +1,105 @@
-import Header from '../components/Header';
-export const metadata = { title: 'Privacy Policy', description: 'Read how Orbitvoice processes local speech, optional AI transcript enhancement, settings, and website download analytics.', keywords: ['Orbitvoice privacy policy', 'voice typing privacy', 'local speech recognition privacy'], alternates: { canonical: '/privacy' } };
-export default function PrivacyPage() { return <><Header /><main className="page-shell legal-page"><span className="eyebrow">Privacy / Orbitdor</span><h1>Your voice.<br /><em>Your choice.</em></h1><p className="inner-lede">Orbitvoice is a Windows desktop voice-typing app made by Orbitdor. It is designed to keep the essential experience local, transparent, and easy to control.</p><h2>What Orbitvoice does</h2><p>Orbitvoice provides a floating microphone widget and keyboard shortcut for dictating into the field where your cursor is active. It records speech only while you start a dictation session, converts speech to text using the bundled local model, and inserts the transcript at your cursor. The app does not require an Orbitdor account for local recognition.</p><h2>Local speech recognition</h2><p>With the default local path, audio processing and speech recognition happen on your Windows computer. The audio is not uploaded by Orbitvoice for this feature. Your transcript remains available in the app so you can review or copy it when an application cannot accept automatic insertion.</p><h2>Optional AI enhancement</h2><p>AI enhancement is off by default. If you enable it, Orbitvoice sends transcript text—not the original audio—to the AI provider using the API key you configure in the desktop app. The request is made only to improve punctuation, grammar, or readability. If the key is missing, the network is unavailable, or the request fails, Orbitvoice keeps the original local transcript.</p><h2>Settings and credentials</h2><p>Your API key is stored by the desktop app through its local protected key storage flow and is never placed in this public website. You can continue using local dictation without an API key. Widget position, language preference, and other app settings are stored locally for your convenience.</p><h2>What this website measures</h2><p>When a visitor clicks the Windows download button, this website records one download event with its UTC timestamp and aggregated day, month, and year totals. A short one-way client identifier may be used to reduce automated abuse; the raw IP address is not written to the statistics file. The public header displays only the aggregate download total.</p><h2>Data retention</h2><p>Download totals are kept in the website’s configured analytics store so the public counter and internal reporting remain consistent. The site does not use the download event to identify the person who downloaded the installer.</p><h2>Contact Orbitdor</h2><p>For privacy questions, email <a className="email-link" href="mailto:orbitdor@gmail.com">orbitdor@gmail.com</a> or visit <a className="email-link" href="https://www.orbitdor.com" target="_blank" rel="noreferrer">www.orbitdor.com</a>.</p></main><footer className="site-footer"><div className="page-shell footer-inner"><div><strong>Orbitvoice</strong><span>Voice, everywhere.</span></div><nav><a href="/">Home</a><a href="/about">About</a><a href="/docs">Docs</a></nav><small>© 2026 Orbitdor</small></div></footer></>; }
+import { pageMetadata } from '../../lib/site';
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import Icon from "../components/Icon";
+export const metadata = pageMetadata({
+  "title": "Privacy Policy: Speech, AI & Data",
+  "description": "Understand how Orbitvoice handles local speech recognition, optional AI transcript cleanup, app settings and website download analytics.",
+  "path": "/privacy",
+  "keywords": [
+    "Orbitvoice privacy policy",
+    "speech recognition privacy",
+    "voice typing data"
+  ]
+});
+export default function PrivacyPage() {
+  return (
+    <>
+      <Header />
+      <main id="main-content" tabIndex={-1} className="page-shell legal-page">
+        <span className="feature-icon">
+          <Icon name="shield" />
+        </span>
+        <span className="eyebrow">Privacy / Orbitdor</span>
+        <h1>
+          Your voice.
+          <br />
+          <em>Your choice.</em>
+        </h1>
+        <p className="inner-lede">
+          Orbitvoice is a Windows desktop voice-typing app made by Orbitdor. It
+          is designed to keep the essential experience local, transparent, and
+          easy to control.
+        </p>
+        <h2>What Orbitvoice does</h2>
+        <p>
+          Orbitvoice provides a floating microphone widget and keyboard shortcut
+          for dictating into the field where your cursor is active. It records
+          speech only while you start a dictation session, converts speech to
+          text using the bundled local model, and inserts the transcript at your
+          cursor. The app does not require an Orbitdor account for local
+          recognition.
+        </p>
+        <h2>Local speech recognition</h2>
+        <p>
+          With the default local path, audio processing and speech recognition
+          happen on your Windows computer. The audio is not uploaded by
+          Orbitvoice for this feature. Your transcript remains available in the
+          app so you can review or copy it when an application cannot accept
+          automatic insertion.
+        </p>
+        <h2>Optional AI enhancement</h2>
+        <p>
+          AI enhancement is off by default. If you enable it, Orbitvoice sends
+          transcript text—not the original audio—to the AI provider using the
+          API key you configure in the desktop app. The request is made only to
+          improve punctuation, grammar, or readability. If the key is missing,
+          the network is unavailable, or the request fails, Orbitvoice keeps the
+          original local transcript.
+        </p>
+        <h2>Settings and credentials</h2>
+        <p>
+          Your API key is stored by the desktop app through its local protected
+          key storage flow and is never placed in this public website. You can
+          continue using local dictation without an API key. Widget position,
+          language preference, and other app settings are stored locally for
+          your convenience.
+        </p>
+        <h2>What this website measures</h2>
+        <p>
+          When a visitor clicks the Windows download button, this website
+          records one download event with its UTC timestamp and aggregated day,
+          month, and year totals. A short one-way client identifier may be used
+          to reduce automated abuse; the raw IP address is not written to the
+          statistics file. The public header displays only the aggregate
+          download total.
+        </p>
+        <h2>Data retention</h2>
+        <p>
+          Download totals are kept in the website’s configured analytics store
+          so the public counter and internal reporting remain consistent. The
+          site does not use the download event to identify the person who
+          downloaded the installer.
+        </p>
+        <h2>Contact Orbitdor</h2>
+        <p>
+          For privacy questions, email{" "}
+          <a className="email-link" href="mailto:orbitdor@gmail.com">
+            orbitdor@gmail.com
+          </a>{" "}
+          or visit{" "}
+          <a
+            className="email-link"
+            href="https://www.orbitdor.com"
+            target="_blank"
+            rel="noreferrer"
+          >
+            www.orbitdor.com
+          </a>
+          .
+        </p>
+      </main>
+      <Footer />
+    </>
+  );
+}

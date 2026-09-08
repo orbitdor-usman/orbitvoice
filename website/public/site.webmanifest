@@ -4,7 +4,7 @@
   "description": "Private Windows voice typing by Orbitdor.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#07100d",
-  "theme_color": "#07100d",
+  "background_color": "#0a1210",
+  "theme_color": "#0a1210",
   "icons": [{ "src": "/icon.png", "sizes": "any", "type": "image/png" }]
 }
