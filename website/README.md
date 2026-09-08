@@ -15,11 +15,11 @@ npm run dev
 
 The current version, filename, size and GitHub download URL are defined together in `lib/release.json`. The header badge, download API, public redirect, docs filename, homepage release details and software metadata share that configuration. The current installer is about 156 MB.
 
-The configured GitHub repository-file URL is `https://github.com/orbitdor-usman/orbitvoice/raw/refs/heads/main/website/public/downloads/Orbitvoice-1.2.1-Setup.exe`. `raw/refs/heads/main` requests the file contents; a regular GitHub folder or `blob` URL is a webpage. The actual repository folder is `website/public/downloads` (plural), while its public website URL starts with `/downloads/`.
+The installer is hosted as a GitHub Release asset: `https://github.com/orbitdor-usman/orbitvoice/releases/download/1.2.1/Orbitvoice-1.2.1-Setup.exe`. The repository's `website/public/downloads` directory is only a local build convenience. Executables remain ignored by Git; release assets are uploaded separately.
 
-At verification time, GitHub has no installer at this repository path and has only the older `v1.1.0` Release. The new raw URL will return 404 until the file is published. GitHub blocks ordinary Git files larger than 100 MiB; this executable needs Git LFS to be stored at the requested repository path. Alternatively, publish it as a GitHub Release asset and set `ORBITVOICE_INSTALLER_URL` to that asset's download URL. See [GitHub large-file guidance](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github).
+The previously configured raw GitHub URL returned 404 because no installer was stored at that repository path. The binary is larger than GitHub's ordinary Git file limit, so it is distributed through Releases. See [GitHub large-file guidance](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github).
 
-Set or update `ORBITVOICE_INSTALLER_URL` in Vercel to match the chosen hosted file, then redeploy. An existing Vercel value overrides the default in the code; editing `.env` locally does not update Vercel. The local executable is ignored by Git and is not automatically uploaded by this configuration change.
+`ORBITVOICE_INSTALLER_URL` can override the release URL for another hosted installer. Known obsolete raw-file URLs and the old v1.1.0 default automatically resolve to the current release, including when those values remain in Vercel. Editing `.env` locally does not change Vercel settings; this compatibility handling is in the deployed code. For a future release, publish and verify the new asset before updating `lib/release.json` and any custom deployment override.
 
 The public `/downloads/Orbitvoice-1.2.1-Setup.exe` path and the legacy root `/Orbitvoice-1.1.0-Setup.exe` path both redirect to the current GitHub installer URL when deployed without a local executable.
 
