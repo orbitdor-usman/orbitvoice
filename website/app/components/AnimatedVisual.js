@@ -1,10 +1,4 @@
-const voiceWaveFrames = [
-  'M101 244h22l10-28 14 52 15-76 15 91 15-42 15 27 15-66 15 55h34',
-  'M101 244h22l10-58 14 37 15-18 15 78 15-102 15 82 15-29 15 48 15-72 15 63h34',
-  'M101 244h22l10-18 14 13 15-70 15 88 15-44 15 27 15-84 15 77 15-26 15 37h34',
-  'M101 244h22l10-43 14 68 15-94 15 106 15-31 15 18 15-55 15 40 15-20 15 31h34',
-  'M101 244h22l10-29 14 55 15-83 15 96 15-54 15 42 15-71 15 58 15-34 15 20h34'
-];
+const voiceWavePath = 'M101 244h22c6 0 8-47 14-47s8 72 15 72 9-52 16-52 9 38 16 38 9-88 16-88 10 112 17 112 10-69 17-69 10 38 17 38 9-58 16-58 10 54 17 54h34';
 
 export function HeroVisual() {
   return <div className="hero-visual" aria-label="Orbitvoice voice input preview">
@@ -23,7 +17,12 @@ export function HeroVisual() {
         <path d="M68 146h386" stroke="#2d4a39" />
         <rect x="94" y="118" width="10" height="10" rx="5" fill="#ff716d" /><rect x="112" y="118" width="10" height="10" rx="5" fill="#ffc24d" /><rect x="130" y="118" width="10" height="10" rx="5" fill="#54e78e" />
         <text x="420" y="128" textAnchor="end" fill="#9bb5a5" fontSize="11" fontFamily="DM Sans, sans-serif">ORBITVOICE</text>
-        <g className="recording-wave" fill="none" stroke="url(#voice-green)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path className="voice-wave-path" d={voiceWaveFrames[0]}><animate attributeName="d" dur="1.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.24;.48;.72;1" keySplines=".42 0 .58 1;.42 0 .58 1;.42 0 .58 1;.42 0 .58 1" values={voiceWaveFrames.join(';')} /><animate attributeName="stroke-width" dur="1.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.24;.48;.72;1" keySplines=".42 0 .58 1;.42 0 .58 1;.42 0 .58 1;.42 0 .58 1" values="3.6;4.6;3.8;4.5;3.6" /></path></g>
+        <g className="recording-wave" fill="none" stroke="url(#voice-green)" strokeLinecap="round" strokeLinejoin="round">
+          <path className="voice-wave-bed" pathLength="1" d={voiceWavePath} stroke="#31533f" strokeWidth="4" />
+          <path className="voice-wave-path" pathLength="1" d={voiceWavePath} strokeWidth="4" />
+          <path className="voice-wave-glow" pathLength="1" d={voiceWavePath} strokeWidth="7" />
+          <circle className="wave-listening-dot" cx="101" cy="244" r="4" fill="#b8f6d0" stroke="none" />
+        </g>
         <path d="M101 301h235" stroke="#334e3e" strokeWidth="8" strokeLinecap="round" /><path className="record-progress" d="M101 301h130" stroke="#82e4ac" strokeWidth="8" strokeLinecap="round" />
         <rect className="record-button" x="342" y="272" width="52" height="52" rx="26" fill="#8ee9b6" /><rect x="363" y="282" width="10" height="20" rx="5" fill="none" stroke="#0c2418" strokeWidth="3" /><path d="M357 297a11 11 0 0 0 22 0m-11 11v7m-6 0h12" stroke="#0c2418" strokeWidth="3" strokeLinecap="round" fill="none" />
         <text x="101" y="355" fill="#9ab5a5" fontSize="12" fontFamily="DM Sans, sans-serif">Listening at your cursor</text>
