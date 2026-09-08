@@ -6,7 +6,9 @@ const defaultFile = path.join(process.cwd(), 'data', 'download-stats.json');
 const statsFile = process.env.DOWNLOAD_STATS_FILE || defaultFile;
 // GitHub Release is the production source for the large Windows installer.
 // Keep this public fallback in sync with the release tag and asset name.
-const installer = process.env.ORBITVOICE_INSTALLER_URL || 'https://github.com/orbitdor-usman/orbitvoice/releases/download/v1.1.0/Orbitvoice-1.1.0-Setup.exe';
+const publicInstallerUrl = 'https://github.com/orbitdor-usman/orbitvoice/releases/download/v1.1.0/Orbitvoice-1.1.0-Setup.exe';
+const configuredInstallerUrl = process.env.ORBITVOICE_INSTALLER_URL;
+const installer = configuredInstallerUrl && /^https?:\/\//i.test(configuredInstallerUrl) ? configuredInstallerUrl : publicInstallerUrl;
 let writeQueue = Promise.resolve();
 
 function dayKey(date) { return date.toISOString().slice(0, 10); }

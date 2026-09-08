@@ -9,13 +9,11 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: 'File not found.' }, { status: 404 });
   }
 
-  const configuredUrl = process.env.ORBITVOICE_INSTALLER_URL || publicInstallerUrl;
-  if (configuredUrl === `/downloads/${installerName}` || configuredUrl === installerName) {
-    return NextResponse.json({ error: 'Installer URL is not configured for this deployment.' }, { status: 503 });
-  }
+  const configuredUrl = process.env.ORBITVOICE_INSTALLER_URL;
+  const targetUrl = configuredUrl && /^https?:\/\//i.test(configuredUrl) ? configuredUrl : publicInstallerUrl;
 
   try {
-    const target = new URL(configuredUrl);
+    const target = new URL(targetUrl);
     if (!['https:', 'http:'].includes(target.protocol)) throw new Error('Unsupported installer URL protocol.');
     return NextResponse.redirect(target, 307);
   } catch {
