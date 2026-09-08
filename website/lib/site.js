@@ -1,7 +1,7 @@
 // The product's canonical origin. Orbitdor's company site is a separate website.
 export const siteUrl = "https://ov.orbitdor.com";
 export const companyUrl = "https://www.orbitdor.com";
-export const googleVerification = "PUDDIY_LUFqNSlao_PEf71BhSQyDCd0OiLmsYfl6Dy0";
+export const googleVerification = "d5LuSOHtC4G04YwHio3GUDHuM_Zj_FJ3qyGYtAZlC2Y";
 export const socialImage = {
   url: "/opengraph-image",
   width: 1200,
