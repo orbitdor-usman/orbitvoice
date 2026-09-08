@@ -9,7 +9,7 @@
 - [Installation and usage docs](https://ov.orbitdor.com/docs)
 - [Contact Orbitdor](https://ov.orbitdor.com/contact)
 - [Privacy policy](https://ov.orbitdor.com/privacy)
-- [Download Orbitvoice for Windows](https://ov.orbitdor.com/downloads/Orbitvoice-1.1.0-Setup.exe)
+- [Download Orbitvoice for Windows](https://ov.orbitdor.com/downloads/Orbitvoice-1.2.1-Setup.exe)
 
 ## Product summary
 

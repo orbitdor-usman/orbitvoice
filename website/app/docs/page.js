@@ -1,4 +1,5 @@
 import { pageMetadata } from '../../lib/site';
+import release from '../../lib/release.json';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Icon from "../components/Icon";
@@ -52,7 +53,7 @@ export default function DocsPage() {
                 required.
               </p>
               <div className="code-note">
-                <code>Orbitvoice-1.1.0-Setup.exe</code>
+                <code>{release.fileName}</code>
                 <span>Windows 10/11 · x64</span>
               </div>
             </section>

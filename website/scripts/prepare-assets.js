@@ -1,15 +1,17 @@
 const fs = require('fs');
 const path = require('path');
+const release = require('../lib/release.json');
 
 const root = path.join(__dirname, '..');
 const installerDir = path.join(root, 'public', 'downloads');
 fs.mkdirSync(installerDir, { recursive: true });
 
-const installerName = 'Orbitvoice-1.1.0-Setup.exe';
+const installerName = release.fileName;
 const installerCandidates = [
   process.env.ORBITVOICE_INSTALLER_PATH,
   path.join(root, 'desktop-app', installerName),
-  path.join(root, '..', 'release', installerName)
+  path.join(root, '..', 'release', release.version, installerName),
+  path.join(root, '..', 'release', installerName),
 ].filter(Boolean);
 const sourceInstaller = installerCandidates.find(candidate => fs.existsSync(candidate));
 if (sourceInstaller) {

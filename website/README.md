@@ -13,9 +13,15 @@ npm run dev
 
 `npm run prepare-assets` copies the current installer from `desktop-app/` (or the local repository's `../release` folder) into `public/downloads/`. The website's download button calls `POST /api/download`, stores one MongoDB `download_events` document per accepted click, and then sends the browser to the installer. Each document includes the UTC day, month, year, a one-way HMAC IP hash, and limited request context; raw IP addresses are never stored. If `MONGODB_URI` is not configured for local development, the existing JSON file fallback is used.
 
-The Windows installer is about 129 MB. For Vercel, do not rely on a repository-local executable or the `release/` folder. Publish `Orbitvoice-1.1.0-Setup.exe` in the public GitHub Release tagged `v1.1.0`, or use another durable public location, then set `ORBITVOICE_INSTALLER_URL` in Vercel Environment Variables. The production fallback is `https://github.com/orbitdor-usman/orbitvoice/releases/download/v1.1.0/Orbitvoice-1.1.0-Setup.exe`.
+The current version, filename, size and GitHub download URL are defined together in `lib/release.json`. The header badge, download API, public redirect, docs filename, homepage release details and software metadata share that configuration. The current installer is about 156 MB.
 
-The direct `/downloads/Orbitvoice-1.1.0-Setup.exe` path and the legacy root `/Orbitvoice-1.1.0-Setup.exe` path both redirect to the configured external installer URL when deployed without a local executable.
+The configured GitHub repository-file URL is `https://github.com/orbitdor-usman/orbitvoice/raw/refs/heads/main/website/public/downloads/Orbitvoice-1.2.1-Setup.exe`. `raw/refs/heads/main` requests the file contents; a regular GitHub folder or `blob` URL is a webpage. The actual repository folder is `website/public/downloads` (plural), while its public website URL starts with `/downloads/`.
+
+At verification time, GitHub has no installer at this repository path and has only the older `v1.1.0` Release. The new raw URL will return 404 until the file is published. GitHub blocks ordinary Git files larger than 100 MiB; this executable needs Git LFS to be stored at the requested repository path. Alternatively, publish it as a GitHub Release asset and set `ORBITVOICE_INSTALLER_URL` to that asset's download URL. See [GitHub large-file guidance](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github).
+
+Set or update `ORBITVOICE_INSTALLER_URL` in Vercel to match the chosen hosted file, then redeploy. An existing Vercel value overrides the default in the code; editing `.env` locally does not update Vercel. The local executable is ignored by Git and is not automatically uploaded by this configuration change.
+
+The public `/downloads/Orbitvoice-1.2.1-Setup.exe` path and the legacy root `/Orbitvoice-1.1.0-Setup.exe` path both redirect to the current GitHub installer URL when deployed without a local executable.
 
 The header reads `GET /api/download-count`, which counts the MongoDB event documents and exposes only the public aggregate total, formatted compactly (`999`, `1k`, `1.1k`). Both public endpoints use a MongoDB-backed fixed-window rate limiter when MongoDB is configured.
 

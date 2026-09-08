@@ -1,4 +1,5 @@
 import { pageMetadata } from '../lib/site';
+import release from '../lib/release.json';
 import Header from "./components/Header";
 import DownloadButton from "./components/DownloadButton";
 import { HeroVisual } from "./components/AnimatedVisual";
@@ -213,7 +214,7 @@ export default function HomePage() {
                 <Icon name="mic" />
               </span>
               <DownloadButton windows label="Download for Windows" />
-              <small>Orbitvoice 1.1.0 · Windows installer · ~129 MB</small>
+              <small>Orbitvoice {release.version} · Windows installer · ~{release.sizeLabel}</small>
             </div>
           </div>
         </section>

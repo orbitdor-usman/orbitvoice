@@ -1,4 +1,5 @@
 import './globals.css';
+import release from '../lib/release.json';
 import { siteUrl, companyUrl, googleVerification, socialImage } from '../lib/site';
 
 export const metadata = {
@@ -57,8 +58,8 @@ const structuredData = {
       operatingSystem: 'Windows 10, Windows 11',
       description: 'A private Windows voice typing app with local multilingual speech recognition and optional AI transcript enhancement.',
       url: siteUrl,
-      downloadUrl: `${siteUrl}/downloads/Orbitvoice-1.1.0-Setup.exe`,
-      softwareVersion: '1.1.0',
+      downloadUrl: `${siteUrl}${release.downloadPath}`,
+      softwareVersion: release.version,
       image: `${siteUrl}/opengraph-image`,
       inLanguage: 'en',
       featureList: [

@@ -2,16 +2,11 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { getMongoDatabase } from "./mongodb";
+import { getInstallerUrl } from "./installer-url";
 
 const defaultFile = path.join(process.cwd(), "data", "download-stats.json");
 const statsFile = process.env.DOWNLOAD_STATS_FILE || defaultFile;
-const publicInstallerUrl =
-  "https://github.com/orbitdor-usman/orbitvoice/releases/download/v1.1.0/Orbitvoice-1.1.0-Setup.exe";
-const configuredInstallerUrl = process.env.ORBITVOICE_INSTALLER_URL;
-const installer =
-  configuredInstallerUrl && /^https?:\/\//i.test(configuredInstallerUrl)
-    ? configuredInstallerUrl
-    : publicInstallerUrl;
+const installer = getInstallerUrl();
 const downloadCollection = "download_events";
 const rateLimitCollection = "download_rate_limits";
 const rateLimitWindowMs = 60_000;

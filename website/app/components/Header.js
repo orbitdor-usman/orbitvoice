@@ -53,7 +53,7 @@ export default function Header() {
         Skip to content
       </a>
       <div className="header-inner">
-        <Logo />
+        <Logo showVersion />
         <nav className="desktop-nav" aria-label="Main navigation">
           {links.map(([href, label]) => (
             <Link
